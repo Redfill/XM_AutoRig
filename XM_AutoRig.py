@@ -50,6 +50,7 @@ class XMAutoRig(object):
         pm.button(l="remove setup", c=lambda x: DeleteSetup())
         pm.setParent(u=True)
         pm.intSliderGrp(l="spine joint", v=3, min=0,max=6, f=True)
+        #test
 
 
         # display new window
