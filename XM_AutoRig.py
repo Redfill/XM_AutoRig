@@ -37,7 +37,7 @@ def CreateSetup(rigName):
 
     forearm = locatorRig("forearm", arm.locator, (30,120,1))
 
-    hand = locatorRig("hand", forearm.locator, (42,95,2))
+    hand = locatorRig("hand", arm.locator, (42,95,2))
 
 
     #save all locator to a dict for acces in other functions
@@ -59,6 +59,17 @@ def CreateSetup(rigName):
 def DeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
     pm.delete(XMAutorigWindow.rigLocator["hips"])
+
+
+def FixElbow():
+    armPos = XMAutorigWindow.rigLocator["arm"].getTranslation("world")
+    elbowPos = XMAutorigWindow.rigLocator["forearm"].getTranslation("world")
+    handPos = XMAutorigWindow.rigLocator["hand"].getTranslation("world")
+    a = (armPos[1]-handPos[1])/(armPos[0]-handPos[0])
+    b = armPos[1]-(armPos[0]*a)
+    c = (elbowPos[0]*a)+b
+    XMAutorigWindow.rigLocator["forearm"].setTranslation((elbowPos[0],c,elbowPos[2]), "world")
+
 class XMAutoRig(object):
     def __init__(self):
 
@@ -84,6 +95,7 @@ class XMAutoRig(object):
         pm.button(l="remove setup", c=lambda x: DeleteSetup())
         pm.setParent(u=True)
         self.settingFrame = pm.frameLayout(l="setting", en=False)
+        pm.button(l="fix elbow", c=lambda x: FixElbow())
         pm.intSliderGrp(l="spine joint", v=3, min=0,max=6, f=True)
 
 
