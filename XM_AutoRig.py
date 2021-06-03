@@ -1,30 +1,64 @@
 import pymel.core as pm
 from functools import partial
+
+class locatorRig(object):
+    def __init__(self, name, parent, location):
+        self.name = name
+        self.parent = parent
+        self.location = location
+        self.locator = pm.spaceLocator(n=self.name)
+
+        self.locator.setTranslation(self.location, "world")
+
+        if self.parent != None:
+            self.locator.setParent(self.parent)
+
+
+
 def CreateSetup(rigName):
+    pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=True)
+
     rig_dict = {}
-    hips = pm.spaceLocator(n="hips")
-    hips.setTranslation((0,100,0), "world")
+    hips = locatorRig("hips", None, (0,100,0))
 
-    neck = pm.spaceLocator(n="neck")
-    neck.setTranslation((0, 155, 0), "world")
+    neck = locatorRig("neck", hips.locator, (0,155,0))
 
-    head = pm.spaceLocator(n="head")
-    head.setTranslation((0, 162, 0), "world")
+    head = locatorRig("head", neck.locator, (0,160,0))
 
-    print(hips)
+    thigh = locatorRig("thigh", hips.locator, (12,95,0))
+
+    leg = locatorRig("leg", thigh.locator, (12,49,0))
+
+    foot = locatorRig("foot", leg.locator, (12,7,-3))
+
+    shoulder = locatorRig("shoulder", neck.locator, (8,152,0))
+
+    arm = locatorRig("arm", shoulder.locator, (18, 145,0))
+
+    forearm = locatorRig("forearm", arm.locator, (30,120,1))
+
+    hand = locatorRig("hand", forearm.locator, (42,95,2))
+
 
     #save all locator to a dict for acces in other functions
-    rig_dict["hips"] = hips
-    rig_dict["neck"] = neck
-    rig_dict["head"] = head
+    rig_dict["hips"] = hips.locator
+    rig_dict["neck"] = neck.locator
+    rig_dict["head"] = head.locator
+    rig_dict["thigh"] = thigh.locator
+    rig_dict["leg"] = leg.locator
+    rig_dict["foot"] = foot.locator
+    rig_dict["shoulder"] = shoulder.locator
+    rig_dict["arm"] = arm.locator
+    rig_dict["forearm"] = forearm.locator
+    rig_dict["hand"] = hand.locator
 
 
     XMAutorigWindow.rigLocator = rig_dict
     print(XMAutorigWindow.rigLocator)
 
 def DeleteSetup():
-    for i in XMAutorigWindow.rigLocator.values():
-        pm.delete(i)
+    pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
+    pm.delete(XMAutorigWindow.rigLocator["hips"])
 class XMAutoRig(object):
     def __init__(self):
 
@@ -49,8 +83,9 @@ class XMAutoRig(object):
         pm.button(l="setup", c=lambda x: CreateSetup(rigN.getText()))
         pm.button(l="remove setup", c=lambda x: DeleteSetup())
         pm.setParent(u=True)
+        self.settingFrame = pm.frameLayout(l="setting", en=False)
         pm.intSliderGrp(l="spine joint", v=3, min=0,max=6, f=True)
-        #test
+
 
 
         # display new window
