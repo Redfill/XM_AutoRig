@@ -78,7 +78,6 @@ def CreateSetup(rigName):
 
 
     XMAutorigWindow.rigLocator = rig_dict
-    print(XMAutorigWindow.rigLocator)
 
 #set up the base deformer joint
 def Createjoint():
@@ -87,8 +86,8 @@ def Createjoint():
     pm.select(clear=True)
     #vertebre joints
     hips = jointRig("hips_bjnt", None, locator["hips"].getTranslation("world"), "spine")
-    spine = jointRig("spine_bjnt", hips.joint, (locator["hips"].getTranslation("world") + locator["neck"].getTranslation("world"))/2,  "spine")
-    neck = jointRig("neck_bjnt", spine.joint, locator["neck"].getTranslation("world"),  "spine")
+    spines = SpineJoints(locator, hips)
+    neck = jointRig("neck_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue()-1)], locator["neck"].getTranslation("world"),  "spine")
     head = jointRig("head_bjnt", neck.joint, locator["head"].getTranslation("world"), "spine")
 
     #leg joints
@@ -102,7 +101,7 @@ def Createjoint():
 
     #arm joints
     pm.select(clear=True)
-    shoulder = jointRig("l_shoulder_bjnt", None, locator["shoulder"].getTranslation("world"), "shoulder")
+    shoulder = jointRig("l_shoulder_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue()-1)], locator["shoulder"].getTranslation("world"), "shoulder")
     arm = jointRig("l_arm_bjnt", shoulder.joint, locator["arm"].getTranslation("world"), "arm")
     forearm = jointRig("l_forearm_bjnt", arm.joint, locator["forearm"].getTranslation("world"), "arm")
     hand = jointRig("l_hand_bjnt", forearm.joint, locator["hand"].getTranslation("world"), "arm")
@@ -110,7 +109,7 @@ def Createjoint():
 
     #save joint to dict
     rig_dict["hips"] = hips.joint
-    rig_dict["spine"] = spine.joint
+    rig_dict.update(spines)
     rig_dict["neck"] = neck.joint
     rig_dict["head"] = head.joint
     rig_dict["thigh"] = thigh.joint
@@ -123,15 +122,31 @@ def Createjoint():
     rig_dict["forearm"] = forearm.joint
     rig_dict["hand"] = hand.joint
 
+    print(rig_dict)
     XMAutorigWindow.rigJoint = rig_dict
 
 def CreateCtrl():
+    joint = XMAutorigWindow.rigJoint
     print("test")
 
 def DeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
     pm.delete(XMAutorigWindow.rigLocator["hips"])
 
+def ImportSetup():
+    pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=True)
+    rig_dict = {}
+    select = pm.ls(sl=True,tr=True, dag=True)
+    for s in select:
+        rig_dict[s.name()] = s
+    XMAutorigWindow.rigLocator = rig_dict
+
+def ImportJoint():
+    rig_dict = {}
+    select = pm.ls(sl=True,tr=True, dag=True)
+    for s in select:
+        rig_dict[s.name()] = s
+    XMAutorigWindow.rigJoint = rig_dict
 
 def FixElbow(x, p1, p2, p3):
     armPos = p1.getTranslation("world")
@@ -154,6 +169,21 @@ def FixElbow(x, p1, p2, p3):
         c = (elbowPos[1]*a)+b
         p2.setTranslation((c,elbowPos[1],elbowPos[2]), "world")
 
+def SpineJoints(locator, hips):
+    Nspine = XMAutorigWindow.Nspine.getValue()
+    spines = {}
+    dif = (locator["neck"].getTranslation("world") - locator["hips"].getTranslation("world"))/(Nspine+1)
+    for i in range(Nspine):
+        pos = locator["hips"].getTranslation("world") + (dif * (i+1))
+        if i == 0:
+            spine = jointRig("spine_bjnt", hips.joint, pos, "spine")
+        else:
+            spine = jointRig("spine" + str(i) + "_bjnt", spines["spine" + str(i-1)], pos, "spine")
+        spines["spine" + str(i)] = spine.joint
+    print(spines)
+    return spines
+
+
 class XMAutoRig(object):
     def __init__(self):
 
@@ -171,6 +201,11 @@ class XMAutoRig(object):
 
         # create new window
         self.window = pm.window(self.window, title=self.title, widthHeight=self.size)
+        pm.menuBarLayout()
+        pm.menu(l="Import")
+        pm.menuItem(l="Import setup", c=lambda x: ImportSetup())
+        pm.menuItem(l="Import joint", c=lambda x: ImportJoint())
+
         currentRig = None
         pm.frameLayout(l="rig creator")
         pm.columnLayout()
@@ -185,7 +220,7 @@ class XMAutoRig(object):
         pm.button(l="fix elbow", c=lambda x: FixElbow("x",XMAutorigWindow.rigLocator["arm"], XMAutorigWindow.rigLocator["forearm"], XMAutorigWindow.rigLocator["hand"]))
         pm.button(l="fix knee",c=lambda x: FixElbow("y", XMAutorigWindow.rigLocator["thigh"], XMAutorigWindow.rigLocator["leg"],XMAutorigWindow.rigLocator["foot"]))
         pm.setParent(u=True)
-        pm.intSliderGrp(l="spine joint", v=3, min=0,max=6, f=True)
+        self.Nspine = pm.intSliderGrp(l="spine joint", v=3, min=1,max=6, fmx=100, f=True)
         pm.frameLayout(l="create rig")
         pm.button(l="joint setup", c=lambda x: Createjoint())
         pm.button(l="ctrl setup", c=lambda x: CreateCtrl())
