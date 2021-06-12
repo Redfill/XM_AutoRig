@@ -1,7 +1,7 @@
 import pymel.core as pm
 from functools import partial
 
-class locatorRig(object):
+class XMlocatorRig(object):
     def __init__(self, name, parent, location):
         self.name = name
         self.parent = parent
@@ -14,7 +14,7 @@ class locatorRig(object):
             self.locator.setParent(self.parent)
 
 
-class jointRig(object):
+class XMjointRig(object):
     def __init__(self, name, parent, location, type):
         self.name = name
         self.parent = parent
@@ -33,33 +33,33 @@ class jointRig(object):
             self.joint.setAttr("XMjointType", self.type)
 
 #setup locator setup
-def CreateSetup(rigName):
+def XMCreateSetup(rigName):
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=True)
 
     rig_dict = {}
-    hips = locatorRig("hips", None, (0,100,0))
+    hips = XMlocatorRig("hips", None, (0, 100, 0))
 
-    neck = locatorRig("neck", hips.locator, (0,155,0))
+    neck = XMlocatorRig("neck", hips.locator, (0, 155, 0))
 
-    head = locatorRig("head", neck.locator, (0,160,0))
+    head = XMlocatorRig("head", neck.locator, (0, 160, 0))
 
-    thigh = locatorRig("thigh", hips.locator, (12,95,0))
+    thigh = XMlocatorRig("thigh", hips.locator, (12, 95, 0))
 
-    leg = locatorRig("leg", thigh.locator, (12,49,0))
+    leg = XMlocatorRig("leg", thigh.locator, (12, 49, 0))
 
-    foot = locatorRig("foot", thigh.locator, (12,7,-4))
+    foot = XMlocatorRig("foot", thigh.locator, (12, 7, -4))
 
-    toe = locatorRig("toe", foot.locator, (12,1.5,11))
+    toe = XMlocatorRig("toe", foot.locator, (12, 1.5, 11))
 
-    toeEnd = locatorRig("toeEnd", toe.locator, (12,1.5,16))
+    toeEnd = XMlocatorRig("toeEnd", toe.locator, (12, 1.5, 16))
 
-    shoulder = locatorRig("shoulder", hips.locator, (8,152,0))
+    shoulder = XMlocatorRig("shoulder", hips.locator, (8, 152, 0))
 
-    arm = locatorRig("arm", shoulder.locator, (18, 145,0))
+    arm = XMlocatorRig("arm", shoulder.locator, (18, 145, 0))
 
-    forearm = locatorRig("forearm", arm.locator, (30,120,1))
+    forearm = XMlocatorRig("forearm", arm.locator, (30, 120, 1))
 
-    hand = locatorRig("hand", arm.locator, (42,95,2))
+    hand = XMlocatorRig("hand", arm.locator, (42, 95, 2))
 
 
     #save all locator to a dict for acces in other functions
@@ -80,31 +80,31 @@ def CreateSetup(rigName):
     XMAutorigWindow.rigLocator = rig_dict
 
 #set up the base deformer joint
-def Createjoint():
+def XMCreatejoint():
     locator = XMAutorigWindow.rigLocator
     rig_dict = {}
     pm.select(clear=True)
     #vertebre joints
-    hips = jointRig("hips_bjnt", None, locator["hips"].getTranslation("world"), "spine")
-    spines = SpineJoints(locator, hips)
-    neck = jointRig("neck_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue()-1)], locator["neck"].getTranslation("world"),  "spine")
-    head = jointRig("head_bjnt", neck.joint, locator["head"].getTranslation("world"), "spine")
+    hips = XMjointRig("hips_bjnt", None, locator["hips"].getTranslation("world"), "spine")
+    spines = XMSpineJoints(locator, hips)
+    neck = XMjointRig("neck_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue() - 1)], locator["neck"].getTranslation("world"), "spine")
+    head = XMjointRig("head_bjnt", neck.joint, locator["head"].getTranslation("world"), "spine")
 
     #leg joints
     pm.select(clear=True)
-    thigh = jointRig("l_upleg_bjnt", hips.joint, locator["thigh"].getTranslation("world"), "leg")
-    leg = jointRig("l_leg_bjnt", thigh.joint, locator["leg"].getTranslation("world"), "leg")
-    foot = jointRig("l_foot_bjnt", leg.joint, locator["foot"].getTranslation("world"), "leg")
-    toe = jointRig("l_toe_bjnt", foot.joint, locator["toe"].getTranslation("world"), "leg")
-    toeEnd = jointRig("l_toeEnd_jnt", toe.joint, locator["toeEnd"].getTranslation("world"), "leg")
+    thigh = XMjointRig("l_upleg_bjnt", hips.joint, locator["thigh"].getTranslation("world"), "leg")
+    leg = XMjointRig("l_leg_bjnt", thigh.joint, locator["leg"].getTranslation("world"), "leg")
+    foot = XMjointRig("l_foot_bjnt", leg.joint, locator["foot"].getTranslation("world"), "leg")
+    toe = XMjointRig("l_toe_bjnt", foot.joint, locator["toe"].getTranslation("world"), "leg")
+    toeEnd = XMjointRig("l_toeEnd_jnt", toe.joint, locator["toeEnd"].getTranslation("world"), "leg")
     pm.joint(thigh.joint, e=True, oj="xyz", ch=True)
 
     #arm joints
     pm.select(clear=True)
-    shoulder = jointRig("l_shoulder_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue()-1)], locator["shoulder"].getTranslation("world"), "shoulder")
-    arm = jointRig("l_arm_bjnt", shoulder.joint, locator["arm"].getTranslation("world"), "arm")
-    forearm = jointRig("l_forearm_bjnt", arm.joint, locator["forearm"].getTranslation("world"), "arm")
-    hand = jointRig("l_hand_bjnt", forearm.joint, locator["hand"].getTranslation("world"), "arm")
+    shoulder = XMjointRig("l_shoulder_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue() - 1)], locator["shoulder"].getTranslation("world"), "shoulder")
+    arm = XMjointRig("l_arm_bjnt", shoulder.joint, locator["arm"].getTranslation("world"), "arm")
+    forearm = XMjointRig("l_forearm_bjnt", arm.joint, locator["forearm"].getTranslation("world"), "arm")
+    hand = XMjointRig("l_hand_bjnt", forearm.joint, locator["hand"].getTranslation("world"), "arm")
     pm.joint(shoulder.joint, e=True, oj="xyz", ch=True )
 
     #save joint to dict
@@ -125,15 +125,15 @@ def Createjoint():
     print(rig_dict)
     XMAutorigWindow.rigJoint = rig_dict
 
-def CreateCtrl():
+def XMCreateCtrl():
     joint = XMAutorigWindow.rigJoint
     print("test")
 
-def DeleteSetup():
+def XMDeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
     pm.delete(XMAutorigWindow.rigLocator["hips"])
 
-def ImportSetup():
+def XMImportSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=True)
     rig_dict = {}
     select = pm.ls(sl=True,tr=True, dag=True)
@@ -141,14 +141,14 @@ def ImportSetup():
         rig_dict[s.name()] = s
     XMAutorigWindow.rigLocator = rig_dict
 
-def ImportJoint():
+def XMImportJoint():
     rig_dict = {}
     select = pm.ls(sl=True,tr=True, dag=True)
     for s in select:
         rig_dict[s.name()] = s
     XMAutorigWindow.rigJoint = rig_dict
 
-def FixElbow(x, p1, p2, p3):
+def XMFixElbow(x, p1, p2, p3):
     armPos = p1.getTranslation("world")
     elbowPos = p2.getTranslation("world")
     handPos = p3.getTranslation("world")
@@ -169,20 +169,24 @@ def FixElbow(x, p1, p2, p3):
         c = (elbowPos[1]*a)+b
         p2.setTranslation((c,elbowPos[1],elbowPos[2]), "world")
 
-def SpineJoints(locator, hips):
+def XMSpineJoints(locator, hips):
     Nspine = XMAutorigWindow.Nspine.getValue()
     spines = {}
     dif = (locator["neck"].getTranslation("world") - locator["hips"].getTranslation("world"))/(Nspine+1)
     for i in range(Nspine):
         pos = locator["hips"].getTranslation("world") + (dif * (i+1))
         if i == 0:
-            spine = jointRig("spine_bjnt", hips.joint, pos, "spine")
+            spine = XMjointRig("spine_bjnt", hips.joint, pos, "spine")
         else:
-            spine = jointRig("spine" + str(i) + "_bjnt", spines["spine" + str(i-1)], pos, "spine")
+            spine = XMjointRig("spine" + str(i) + "_bjnt", spines["spine" + str(i - 1)], pos, "spine")
         spines["spine" + str(i)] = spine.joint
     print(spines)
     return spines
 
+def XMSetupUnparent():
+    select = pm.ls(sl=True, tr=True)
+    for s in select:
+        s.setParent(XMAutorigWindow.rigLocator["hips"])
 
 class XMAutoRig(object):
     def __init__(self):
@@ -203,8 +207,8 @@ class XMAutoRig(object):
         self.window = pm.window(self.window, title=self.title, widthHeight=self.size)
         pm.menuBarLayout()
         pm.menu(l="Import")
-        pm.menuItem(l="Import setup", c=lambda x: ImportSetup())
-        pm.menuItem(l="Import joint", c=lambda x: ImportJoint())
+        pm.menuItem(l="Import setup", c=lambda x: XMImportSetup())
+        pm.menuItem(l="Import joint", c=lambda x: XMImportJoint())
 
         currentRig = None
         pm.frameLayout(l="rig creator")
@@ -212,18 +216,20 @@ class XMAutoRig(object):
         rigN = pm.textFieldGrp(l="rig name")
         pm.setParent(u=True)
         pm.rowLayout(nc=2, adj=True)
-        pm.button(l="setup", c=lambda x: CreateSetup(rigN.getText()))
-        pm.button(l="remove setup", c=lambda x: DeleteSetup())
+        pm.button(l="setup", c=lambda x: XMCreateSetup(rigN.getText()))
+        pm.button(l="remove setup", c=lambda x: XMDeleteSetup())
         pm.setParent(u=True)
         self.settingFrame = pm.frameLayout(l="setting", en=False)
-        pm.rowLayout(nc=2)
-        pm.button(l="fix elbow", c=lambda x: FixElbow("x",XMAutorigWindow.rigLocator["arm"], XMAutorigWindow.rigLocator["forearm"], XMAutorigWindow.rigLocator["hand"]))
-        pm.button(l="fix knee",c=lambda x: FixElbow("y", XMAutorigWindow.rigLocator["thigh"], XMAutorigWindow.rigLocator["leg"],XMAutorigWindow.rigLocator["foot"]))
+        #setup fixes
+        pm.rowLayout(nc=3)
+        pm.button(l="fix elbow", c=lambda x: XMFixElbow("x", XMAutorigWindow.rigLocator["arm"], XMAutorigWindow.rigLocator["forearm"], XMAutorigWindow.rigLocator["hand"]))
+        pm.button(l="fix knee", c=lambda x: XMFixElbow("y", XMAutorigWindow.rigLocator["thigh"], XMAutorigWindow.rigLocator["leg"], XMAutorigWindow.rigLocator["foot"]))
+        pm.button(l="unparent", c=lambda x: XMSetupUnparent())
         pm.setParent(u=True)
         self.Nspine = pm.intSliderGrp(l="spine joint", v=3, min=1,max=6, fmx=100, f=True)
         pm.frameLayout(l="create rig")
-        pm.button(l="joint setup", c=lambda x: Createjoint())
-        pm.button(l="ctrl setup", c=lambda x: CreateCtrl())
+        pm.button(l="joint setup", c=lambda x: XMCreatejoint())
+        pm.button(l="ctrl setup", c=lambda x: XMCreateCtrl())
 
 
 
