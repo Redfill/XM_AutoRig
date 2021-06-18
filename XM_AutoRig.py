@@ -1,4 +1,5 @@
 import pymel.core as pm
+from string import replace
 from functools import partial
 
 class XMlocatorRig(object):
@@ -31,6 +32,17 @@ class XMjointRig(object):
             pm.joint(self.joint, e=True, sao="yup", zso=True, oj="xyz")
             self.joint.addAttr("XMjointType", dt="string")
             self.joint.setAttr("XMjointType", self.type)
+
+class XMCircleRig(object):
+    def __init__(self, joint, parent):
+        self.joint = joint
+        self.parent = parent
+        self.circle = pm.circle(nr=(0,1,0), n=replace(self.joint.name(), "_bjnt", "_ctrl"), r=10)
+        pm.matchTransform(self.circle, self.joint)
+        pm.parentConstraint(self.circle,self.joint)
+        if self.parent != None:
+            pm.parent(self.circle,self.parent)
+
 
 #setup locator setup
 def XMCreateSetup(rigName):
@@ -122,13 +134,24 @@ def XMCreatejoint():
     rig_dict["forearm"] = forearm.joint
     rig_dict["hand"] = hand.joint
 
-    print(rig_dict)
     XMAutorigWindow.rigJoint = rig_dict
 
 def XMCreateCtrl():
-    joint = XMAutorigWindow.rigJoint
-    print("test")
+    joints = XMAutorigWindow.rigJoint
+    hc = joints["hips"].listRelatives(ad=True)
+    hc.append(joints["hips"])
+    hc.reverse()
+    lastValid = joints["hips"]
 
+    for joint in hc:
+        if joint.getAttr("XMjointType") == "spine":
+            print(lastValid)
+            if lastValid != joints["hips"]:
+                ctrl = XMCircleRig(joint, lastValid)
+            else:
+                ctrl = XMCircleRig(joint, None)
+
+            lastValid = ctrl.circle
 def XMDeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
     pm.delete(XMAutorigWindow.rigLocator["hips"])
@@ -180,7 +203,6 @@ def XMSpineJoints(locator, hips):
         else:
             spine = XMjointRig("spine" + str(i) + "_bjnt", spines["spine" + str(i - 1)], pos, "spine")
         spines["spine" + str(i)] = spine.joint
-    print(spines)
     return spines
 
 def XMSetupUnparent():
