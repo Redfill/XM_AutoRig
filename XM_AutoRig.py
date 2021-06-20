@@ -163,26 +163,30 @@ def XMCreateCtrl():
             if joint.getAttr("XMjointType") == "spine":
                 lastSpine = ctrl.circle
 
-    #arm controller
-    shoulderCtrl = XMCircleRig(joints["shoulder"], lastSpine[0],"")
-    fkarm = pm.duplicate(joints["arm"], rc=True)
+    armCtrlSetup("l_", lastSpine, joints["shoulder"], joints["arm"])
+
+    Rshoulder = pm.mirrorJoint(joints["shoulder"],mirrorYZ=True,mirrorBehavior=True,searchReplace=('l_', 'r_') )
+
+def armCtrlSetup(num, lastSpine ,shoulder, arm):
+    # arm controller
+    shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "")
+    fkarm = pm.duplicate(arm, rc=True)
     fkcopies = fkarm[0].listRelatives(ad=True)
     fkcopies.append(fkarm[0])
     fkcopies.reverse()
-    lastValid = shoulderCtrl.circle
+    lastvalid = shoulderCtrl.circle
     armctrls = {}
 
     for joint in fkcopies:
-        ctrl = XMCircleRig(joint, lastValid, "fk")
-        armctrls["l_" + joint.getAttr("XMjointType") + "_fk"] = ctrl.circle
-        lastValid = armctrls["l_" + joint.getAttr("XMjointType") + "_fk"]
+        ctrl = XMCircleRig(joint, lastvalid, "fk")
+        armctrls[num + joint.getAttr("XMjointType") + "_fk"] = ctrl.circle
+        lastvalid = armctrls[num + joint.getAttr("XMjointType") + "_fk"]
         print(ctrl.circle[0])
 
-    ikarm = pm.duplicate(joints["arm"], rc=True)
+    ikarm = pm.duplicate(arm, rc=True)
     ikcopies = ikarm[0].listRelatives(ad=True)
     ikcopies.append(ikarm[0])
     ikcopies.reverse()
-
 
 def XMDeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
