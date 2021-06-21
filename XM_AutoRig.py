@@ -34,13 +34,18 @@ class XMjointRig(object):
             self.joint.setAttr("XMjointType", self.type)
 
 class XMCircleRig(object):
-    def __init__(self, joint, parent, suf):
+    def __init__(self, joint, parent, suf, par="cont"):
         self.joint = joint
         self.parent = parent
         self.suf = suf
+        self.par = par
         self.circle = pm.circle(nr=(0,1,0), n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl"), r=10)
         pm.matchTransform(self.circle, self.joint)
-        pm.parentConstraint(self.circle,self.joint)
+        if self.par == "cont":
+            pm.parentConstraint(self.circle,self.joint)
+        if self.par == "par":
+            pm.parent(self.joint, self.circle)
+
         if self.parent != None:
             pm.parent(self.circle,self.parent)
 
@@ -70,7 +75,7 @@ def XMCreateSetup(rigName):
 
     arm = XMlocatorRig("arm", shoulder.locator, (18, 145, 0))
 
-    forearm = XMlocatorRig("forearm", arm.locator, (30, 120, 1))
+    forearm = XMlocatorRig("forearm", arm.locator, (30, 120, -2))
 
     hand = XMlocatorRig("hand", arm.locator, (42, 95, 2))
 
@@ -153,7 +158,6 @@ def XMCreateCtrl():
     for joint in hc:
         if joint.getAttr("XMjointType") == "spine" or joint.getAttr("XMjointType") == "neck":
 
-            print(lastValid)
             if lastValid != joints["hips"]:
                 ctrl = XMCircleRig(joint, lastValid,"")
             else:
@@ -162,13 +166,13 @@ def XMCreateCtrl():
             lastValid = ctrl.circle
             if joint.getAttr("XMjointType") == "spine":
                 lastSpine = ctrl.circle
+    Rshoulder = pm.mirrorJoint(joints["shoulder"], mirrorYZ=True, mirrorBehavior=True, searchReplace=('l_', 'r_'))
+    armCtrlSetup("l_", lastSpine, joints["shoulder"], joints["arm"], joints["forearm"], joints["hand"])
 
-    armCtrlSetup("l_", lastSpine, joints["shoulder"], joints["arm"])
+    armCtrlSetup("r_", lastSpine, pm.ls(Rshoulder[0])[0], pm.ls(Rshoulder[1])[0], pm.ls(Rshoulder[2])[0], pm.ls(Rshoulder[3])[0])
 
-    Rshoulder = pm.mirrorJoint(joints["shoulder"],mirrorYZ=True,mirrorBehavior=True,searchReplace=('l_', 'r_') )
-
-def armCtrlSetup(num, lastSpine ,shoulder, arm):
-    # arm controller
+def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
+    # arm FK controller
     shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "")
     fkarm = pm.duplicate(arm, rc=True)
     fkcopies = fkarm[0].listRelatives(ad=True)
@@ -181,12 +185,43 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm):
         ctrl = XMCircleRig(joint, lastvalid, "fk")
         armctrls[num + joint.getAttr("XMjointType") + "_fk"] = ctrl.circle
         lastvalid = armctrls[num + joint.getAttr("XMjointType") + "_fk"]
-        print(ctrl.circle[0])
 
+    #IK arm setup
     ikarm = pm.duplicate(arm, rc=True)
     ikcopies = ikarm[0].listRelatives(ad=True)
     ikcopies.append(ikarm[0])
     ikcopies.reverse()
+    ikHandle = pm.ikHandle(sj=ikcopies[0], ee=ikcopies[2], sol="ikRPsolver", n= num + "arm_ikHandle")
+    ikCtrl = XMCircleRig(ikHandle[0], None, "IK", "par")
+
+    ikPole = XMCircleRig(ikcopies[1], ikCtrl.circle, "", "")
+    ikPole.circle[0].setTranslation(ikPole.circle[0].getTranslation("world")+(0,0,-70),"world")
+
+    pm.poleVectorConstraint(ikPole.circle[0], ikHandle[0])
+
+    ikSwitch = ikCtrl.circle[0].addAttr("IKFK", at="bool", k=True, r=True)
+
+
+    armCont = pm.parentConstraint(fkcopies[0], ikcopies[0], arm)
+    forearmCont = pm.parentConstraint(fkcopies[1], ikcopies[1], forearm)
+    handCont = pm.parentConstraint(fkcopies[2], ikcopies[2], hand)
+
+    reverseNode = pm.shadingNode("reverse", au=True)
+
+    pm.connectAttr(ikCtrl.circle[0].IKFK, reverseNode.input.inputX)
+
+    pm.connectAttr(reverseNode.output.outputX, pm.parentConstraint(armCont, q=True, wal=True)[1])
+    pm.connectAttr(ikCtrl.circle[0].IKFK, pm.parentConstraint(armCont, q=True, wal=True)[0])
+
+    pm.connectAttr(reverseNode.output.outputX, pm.parentConstraint(forearmCont, q=True, wal=True)[1])
+    pm.connectAttr(ikCtrl.circle[0].IKFK, pm.parentConstraint(forearmCont, q=True, wal=True)[0])
+
+    pm.connectAttr(reverseNode.output.outputX, pm.parentConstraint(handCont, q=True, wal=True)[1])
+    pm.connectAttr(ikCtrl.circle[0].IKFK, pm.parentConstraint(handCont, q=True, wal=True)[0])
+
+    for joint in armctrls:
+        pm.connectAttr(ikCtrl.circle[0].IKFK, armctrls[joint][0].visibility)
+
 
 def XMDeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
