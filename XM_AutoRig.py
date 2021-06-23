@@ -1353,12 +1353,14 @@ class XMCircleRig(object):
         self.par = par
         self.ctrl = ctrl
         if self.ctrl == "circle":
-            self.circle = pm.circle(nr=(0,1,0), n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl"), r=10)
+            self.circle = pm.circle(nr=(0,1,0), n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), r=10)
         else:
-            self.circle = pm.curve(n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl"),d=1, p=XMCircleRig.cvTuples[ctrl])
+            self.circle = pm.curve(n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"),d=1, p=XMCircleRig.cvTuples[ctrl])
 
-        self.group = pm.group(self.circle, n=replace(self.joint.name(), "_bjnt", self.suf + "_srtBuffer"))
-        pm.matchTransform(self.group, self.joint)
+        self.group = pm.group(em=True, n=replace(self.joint.name(), "_bjnt", self.suf + "_srtBuffer"))
+        pm.parent(self.circle, self.group)
+
+        pm.matchTransform(self.group, self.joint, piv=True, pos=True, rot=True)
         if self.par == "cont":
             pm.parentConstraint(self.circle,self.joint)
         if self.par == "par":
@@ -1503,6 +1505,7 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
     armctrls = {}
 
     for joint in fkcopies:
+        joint.rename(num + joint.getAttr("XMjointType") + "FK_jnt")
         ctrl = XMCircleRig(joint, lastvalid, "fk", "circle")
         armctrls[num + joint.getAttr("XMjointType") + "_fk"] = ctrl.circle
         lastvalid = armctrls[num + joint.getAttr("XMjointType") + "_fk"]
@@ -1512,6 +1515,9 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
     ikcopies = ikarm[0].listRelatives(ad=True)
     ikcopies.append(ikarm[0])
     ikcopies.reverse()
+    for joint in ikcopies:
+        joint.rename(num + joint.getAttr("XMjointType") + "IK_jnt")
+
     ikHandle = pm.ikHandle(sj=ikcopies[0], ee=ikcopies[2], sol="ikRPsolver", n= num + "arm_ikHandle")
     ikCtrl = XMCircleRig(ikHandle[0], None, "IK","Sphere", "par")
 
@@ -1551,6 +1557,7 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
         pm.connectAttr(ikOption.circle.IKFK, armctrls[joint][0].visibility)
     ikarm[0].hide()
     fkarm[0].hide()
+    ikHandle[0].hide()
 
 def LegCtrlSetup():
     print("a laide chu tanner")
