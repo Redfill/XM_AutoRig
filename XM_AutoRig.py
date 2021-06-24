@@ -20,7 +20,6 @@ class XMlocatorRig(object):
         if self.parent != None:
             self.locator.setParent(self.parent)
 
-
 class XMjointRig(object):
     def __init__(self, name, parent, location, type):
         self.name = name
@@ -1380,7 +1379,6 @@ class XMCircleRig(object):
         if self.parent != None:
             pm.parent(self.group,self.parent)
 
-
 #setup locator setup
 def XMCreateSetup(rigName):
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=True)
@@ -1632,11 +1630,6 @@ def LegCtrlSetup(master,num, thigh, leg, foot, toe, toeEnd):
     toeEndIkhandle[0].hide()
 
     ikCtrl.group.setParent(master)
-
-
-
-
-
 
 def XMDeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
