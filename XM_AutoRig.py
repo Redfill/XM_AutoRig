@@ -2,13 +2,20 @@ import pymel.core as pm
 from string import replace
 
 class XMlocatorRig(object):
-    def __init__(self, name, parent, location):
+    def __init__(self, name, parent, location, t="setup"):
         self.name = name
         self.parent = parent
         self.location = location
+        self.type = t
         self.locator = pm.spaceLocator(n=self.name)
-
         self.locator.setTranslation(self.location, "world")
+
+        if self.type == "ctrl":
+            self.locator.setAttr("overrideEnabled", True)
+            self.locator.setAttr("overrideRGBColors", True)
+            self.locator.setAttr("overrideColorRGB", (1, 0, 0))
+            self.locator.getShape().addAttr("XMjointType", dt="string")
+            self.locator.getShape().setAttr("XMjointType", self.type)
 
         if self.parent != None:
             self.locator.setParent(self.parent)
@@ -1346,20 +1353,22 @@ class XMCircleRig(object):
         (-0.6178520249074192, 0.0, -1.8770031626614314),
         (-0.1831451367158871, 0.0, -1.9688981435835975)
     ]
-    def __init__(self, joint, parent, suf, ctrl, par="cont"):
+    def __init__(self, joint, parent, suf, ctrl, par="cont", n=None):
         self.joint = joint
         self.parent = parent
         self.suf = suf
         self.par = par
         self.ctrl = ctrl
+        self.n = n
         if self.ctrl == "circle":
             self.circle = pm.circle(nr=(0,1,0), n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), r=10)
         else:
             self.circle = pm.curve(n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"),d=1, p=XMCircleRig.cvTuples[ctrl])
+        if self.n != None:
+            self.circle.rename(self.n)
 
         self.group = pm.group(em=True, n=replace(self.joint.name(), "_bjnt", self.suf + "_srtBuffer"))
         pm.parent(self.circle, self.group)
-
         pm.matchTransform(self.group, self.joint, piv=True, pos=True, rot=True)
         if self.par == "cont":
             pm.parentConstraint(self.circle,self.joint)
@@ -1441,6 +1450,12 @@ def XMCreatejoint():
     pm.joint(thigh.joint, e=True, oj="xyz", ch=True)
     EndJoint(toeEnd.joint)
 
+    twist = XMlocatorRig("l_twist",toeEnd.joint, toeEnd.joint.getTranslation("world")+(0,0,2), t="ctrl")
+    bankOut = XMlocatorRig("l_bankOut",twist.locator, toeEnd.joint.getTranslation("world")+(5,0,-5), t="ctrl")
+    bankIn = XMlocatorRig("l_bankIn",bankOut.locator, toeEnd.joint.getTranslation("world")+(-5,0,-5), t="ctrl")
+    heel = XMlocatorRig("l_heel",bankIn.locator, toeEnd.joint.getTranslation("world")+(0,0,-20), t="ctrl")
+
+
     #arm joints
     pm.select(clear=True)
     shoulder = XMjointRig("l_shoulder_bjnt", spines["spine" + str(XMAutorigWindow.Nspine.getValue() - 1)], locator["shoulder"].getTranslation("world"), "shoulder")
@@ -1460,6 +1475,7 @@ def XMCreatejoint():
     rig_dict["foot"] = foot.joint
     rig_dict["toe"] = toe.joint
     rig_dict["toeEnd"] = toeEnd.joint
+    rig_dict["twist"] = twist.locator
     rig_dict["shoulder"] = shoulder.joint
     rig_dict["arm"] = arm.joint
     rig_dict["forearm"] = forearm.joint
@@ -1470,6 +1486,8 @@ def XMCreatejoint():
 def XMCreateCtrl():
     joints = XMAutorigWindow.rigJoint
 
+    Mastercurve = pm.circle(n="master_ctrl", nr=(0,1,0), r=40)
+    MasterGroup = pm.group(Mastercurve, n=XMAutorigWindow.rigN.getText())
 
     #spine controller
     hc = joints["hips"].listRelatives(ad=True)
@@ -1484,17 +1502,30 @@ def XMCreateCtrl():
                 ctrl = XMCircleRig(joint, lastValid,"", "circle")
             else:
                 ctrl = XMCircleRig(joint, None, "", "circle")
+                ctrl.group.setParent(Mastercurve)
 
             lastValid = ctrl.circle
             if joint.getAttr("XMjointType") == "spine":
                 lastSpine = ctrl.circle
 
+    #arm setup
     Rshoulder = pm.mirrorJoint(joints["shoulder"], mirrorYZ=True, mirrorBehavior=True, searchReplace=('l_', 'r_'))
-    armCtrlSetup("l_", lastSpine, joints["shoulder"], joints["arm"], joints["forearm"], joints["hand"])
+    armCtrlSetup(Mastercurve,"l_", lastSpine, joints["shoulder"], joints["arm"], joints["forearm"], joints["hand"])
 
-    armCtrlSetup("r_", lastSpine, pm.ls(Rshoulder[0])[0], pm.ls(Rshoulder[1])[0], pm.ls(Rshoulder[2])[0], pm.ls(Rshoulder[3])[0])
+    armCtrlSetup(Mastercurve,"r_", lastSpine, pm.ls(Rshoulder[0])[0], pm.ls(Rshoulder[1])[0], pm.ls(Rshoulder[2])[0], pm.ls(Rshoulder[3])[0])
 
-def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
+    #leg setup
+    Rleg = pm.mirrorJoint(joints["thigh"], mirrorYZ=True, mirrorBehavior=True, searchReplace=("l_", "r_"))
+
+    LegCtrlSetup(Mastercurve,"l_", joints["thigh"], joints["leg"], joints["foot"], joints["toe"], joints["toeEnd"])
+
+    LegCtrlSetup(Mastercurve,"r_",pm.ls(Rleg[0])[0], pm.ls(Rleg[1])[0], pm.ls(Rleg[2])[0], pm.ls(Rleg[3])[0], pm.ls(Rleg[4])[0])
+
+    jointGrp = pm.group(joints["hips"], n="joints")
+
+    jointGrp.setParent(MasterGroup)
+
+def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand):
     # arm FK controller
     shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "", "Circle Pin")
     fkarm = pm.duplicate(arm, rc=True)
@@ -1527,7 +1558,6 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
     pm.poleVectorConstraint(ikPole.circle, ikHandle[0])
 
     ikOption = XMCircleRig(hand, hand, "ikOption", "Gear", "ctrl")
-    print(ikOption.circle)
 
     ikOption.circle.addAttr("IKFK", at="bool", k=True, r=True)
 
@@ -1539,7 +1569,6 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
     reverseNode = pm.shadingNode("reverse", au=True)
 
     pm.connectAttr(ikOption.circle.IKFK, reverseNode.input.inputX)
-    print(pm.parentConstraint(armCont, q=True, wal=True))
 
     #arm
     pm.connectAttr(reverseNode.output.outputX, pm.parentConstraint(armCont, q=True, wal=True)[1])
@@ -1555,12 +1584,59 @@ def armCtrlSetup(num, lastSpine ,shoulder, arm, forearm, hand):
 
     for joint in armctrls:
         pm.connectAttr(ikOption.circle.IKFK, armctrls[joint][0].visibility)
+    pm.connectAttr(reverseNode.output.outputX, ikCtrl.circle.visibility)
     ikarm[0].hide()
     fkarm[0].hide()
     ikHandle[0].hide()
 
-def LegCtrlSetup():
-    print("a laide chu tanner")
+    ikCtrl.group.setParent(master)
+
+def LegCtrlSetup(master,num, thigh, leg, foot, toe, toeEnd):
+    twist = toeEnd.listRelatives(ad=True, typ="transform")
+    twist.reverse()
+
+    legIkHandle = pm.ikHandle(sj=thigh, ee=foot, sol="ikRPsolver", n=num + "leg_ikHandle")
+    ikCtrl = XMCircleRig(legIkHandle[0], None, "IK", "Sphere", "par")
+
+    twist[0].setParent(ikCtrl.circle)
+
+    ikPole = XMCircleRig(leg, ikCtrl.circle, "", "Sphere", "")
+    ikPole.circle.setTranslation(ikPole.circle.getTranslation("world") + (0, 0, 70), "world")
+
+    pm.poleVectorConstraint(ikPole.circle, legIkHandle[0])
+    toeIkhanlde = pm.ikHandle(sj=foot, ee=toe, sol="ikSCsolver", n=num + "toe_ikHandle")
+    toeEndIkhandle = pm.ikHandle(sj=toe, ee=toeEnd, sol="ikSCsolver", n=num + "toeEnd_ikHandle")
+
+    heelCtrl = XMCircleRig(twist[3], twist[2], "", "Half Sphere", par=None)
+
+    toeRollCtrl = XMCircleRig(twist[0], heelCtrl.circle, "", "Half Sphere", par=None)
+
+    footRollCtrl = XMCircleRig(toeIkhanlde[0],toeRollCtrl.circle, "", "circle", par=None )
+
+    toeFlapCtrl = XMCircleRig(toeIkhanlde[0], toeRollCtrl.circle, "", "circle", par=None)
+
+    legIkHandle[0].setParent(footRollCtrl.circle)
+    toeIkhanlde[0].setParent(footRollCtrl.circle)
+    toeEndIkhandle[0].setParent(toeFlapCtrl.circle)
+
+    ikCtrl.circle.addAttr("twist", at="float", k=True, r=True)
+    ikCtrl.circle.addAttr("bankOut", at="float", k=True, r=True)
+    ikCtrl.circle.addAttr("bankIn", at="float", k=True, r=True)
+
+    pm.connectAttr(ikCtrl.circle.twist, twist[0].rotateY)
+    pm.connectAttr(ikCtrl.circle.bankOut, twist[1].rotateZ)
+    pm.connectAttr(ikCtrl.circle.bankIn, twist[2].rotateZ)
+
+    legIkHandle[0].hide()
+    toeIkhanlde[0].hide()
+    toeEndIkhandle[0].hide()
+
+    ikCtrl.group.setParent(master)
+
+
+
+
+
 
 def XMDeleteSetup():
     pm.frameLayout(XMAutorigWindow.settingFrame, e=True, en=False)
@@ -1650,10 +1726,10 @@ class XMAutoRig(object):
         currentRig = None
         pm.frameLayout(l="rig creator")
         pm.columnLayout()
-        rigN = pm.textFieldGrp(l="rig name")
+        self.rigN = pm.textFieldGrp(l="rig name")
         pm.setParent(u=True)
         pm.rowLayout(nc=2, adj=True)
-        pm.button(l="setup", c=lambda x: XMCreateSetup(rigN.getText()))
+        pm.button(l="setup", c=lambda x: XMCreateSetup(self.rigN.getText()))
         pm.button(l="remove setup", c=lambda x: XMDeleteSetup())
         pm.setParent(u=True)
         self.settingFrame = pm.frameLayout(l="setting", en=False)
