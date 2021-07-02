@@ -3,6 +3,13 @@ from string import replace
 
 class XMlocatorRig(object):
     def __init__(self, name, parent, location, t="setup"):
+        """
+        create locator guides
+        :param name: name of the created locator
+        :param parent: parent of the created locator
+        :param location: position of the created locator
+        :param t: type of the locator (used to make non guide locator, example: twist, bank in, bank out) :str
+        """
         self.name = name
         self.parent = parent
         self.location = location
@@ -22,6 +29,13 @@ class XMlocatorRig(object):
 
 class XMjointRig(object):
     def __init__(self, name, parent, location, type):
+        """
+        create joint
+        :param name: name of the created joint
+        :param parent: parent of the created joint
+        :param location: position of the created joint
+        :param type: type of the joint (used in the controller setups) : str
+        """
         self.name = name
         self.parent = parent
         self.location = location
@@ -307,47 +321,47 @@ class XMCircleRig(object):
         (0.0, -2.490540839504063, -3.05003297768552e-16)
     ]
     cvTuples['Circle Pin'] = [
-        (0.0, 3.6012403205778734, 0.0),
-        (-0.18778610161340414, 3.616019375585509, 0.0),
-        (-0.3709482346983487, 3.659992707756567, 0.0),
-        (-0.5449764638842179, 3.7320775476619334, 0.0),
-        (-0.7055854499305741, 3.830498877526053, 0.0),
-        (-0.8488206839113831, 3.952833291509765, 0.0),
-        (-0.9711550978950942, 4.096068453940357, 0.0),
-        (-1.069576499309432, 4.256677439986713, 0.0),
-        (-1.1416613392147976, 4.430705633397475, 0.0),
-        (-1.1856346713858557, 4.613867838032635, 0.0),
-        (-1.2004137263934913, 4.801653760770498, 0.0),
-        (-1.1856346713858557, 4.989439683508361, 0.0),
-        (-1.1416613392147976, 5.172601888143522, 0.0),
-        (-1.069576499309432, 5.3466300815542835, 0.0),
-        (-0.9711550978950942, 5.507239067600639, 0.0),
-        (-0.8488206839113831, 5.650474230031231, 0.0),
-        (-0.7055854499305741, 5.772808644014942, 0.0),
-        (-0.5449764638842179, 5.871229973879063, 0.0),
-        (-0.3709482346983487, 5.943314813784429, 0.0),
-        (-0.18778610161340414, 5.987288145955486, 0.0),
-        (0.0, 6.002067200963123, 0.0),
-        (0.1877860479507416, 5.987288145955486, 0.0),
-        (0.370948163148132, 5.943314813784429, 0.0),
-        (0.5449763207837844, 5.871229973879063, 0.0),
-        (0.7055853068301408, 5.772808644014942, 0.0),
-        (0.8488204692607332, 5.650474230031231, 0.0),
-        (0.9711548832444443, 5.507239067600639, 0.0),
-        (1.069576213108565, 5.3466300815542835, 0.0),
-        (1.141661053013931, 5.172601888143522, 0.0),
-        (1.1856343851849889, 4.989439683508361, 0.0),
-        (1.2004134401926245, 4.801653760770498, 0.0),
-        (1.1856343851849889, 4.613867838032635, 0.0),
-        (1.141661053013931, 4.430705633397475, 0.0),
-        (1.069576213108565, 4.256677439986713, 0.0),
-        (0.9711548832444443, 4.096068453940357, 0.0),
-        (0.8488204692607332, 3.952833291509765, 0.0),
-        (0.7055853068301408, 3.830498877526053, 0.0),
-        (0.5449763207837844, 3.7320775476619334, 0.0),
-        (0.370948163148132, 3.659992707756567, 0.0),
-        (0.1877860479507416, 3.616019375585509, 0.0),
-        (0.0, 3.6012403205778734, 0.0),
+        (0.0, -3.6012403205778734, 0.0),
+        (-0.18778610161340414, -3.616019375585509, 0.0),
+        (-0.3709482346983487, -3.659992707756567, 0.0),
+        (-0.5449764638842179, -3.7320775476619334, 0.0),
+        (-0.7055854499305741, -3.830498877526053, 0.0),
+        (-0.8488206839113831, -3.952833291509765, 0.0),
+        (-0.9711550978950942, -4.096068453940357, 0.0),
+        (-1.069576499309432, -4.256677439986713, 0.0),
+        (-1.1416613392147976, -4.430705633397475, 0.0),
+        (-1.1856346713858557, -4.613867838032635, 0.0),
+        (-1.2004137263934913, -4.801653760770498, 0.0),
+        (-1.1856346713858557, -4.989439683508361, 0.0),
+        (-1.1416613392147976, -5.172601888143522, 0.0),
+        (-1.069576499309432, -5.3466300815542835, 0.0),
+        (-0.9711550978950942, -5.507239067600639, 0.0),
+        (-0.8488206839113831, -5.650474230031231, 0.0),
+        (-0.7055854499305741, -5.772808644014942, 0.0),
+        (-0.5449764638842179, -5.871229973879063, 0.0),
+        (-0.3709482346983487, -5.943314813784429, 0.0),
+        (-0.18778610161340414, -5.987288145955486, 0.0),
+        (0.0, -6.002067200963123, 0.0),
+        (0.1877860479507416, -5.987288145955486, 0.0),
+        (0.370948163148132, -5.943314813784429, 0.0),
+        (0.5449763207837844, -5.871229973879063, 0.0),
+        (0.7055853068301408, -5.772808644014942, 0.0),
+        (0.8488204692607332, -5.650474230031231, 0.0),
+        (0.9711548832444443, -5.507239067600639, 0.0),
+        (1.069576213108565, -5.3466300815542835, 0.0),
+        (1.141661053013931, -5.172601888143522, 0.0),
+        (1.1856343851849889, -4.989439683508361, 0.0),
+        (1.2004134401926245, -4.801653760770498, 0.0),
+        (1.1856343851849889, -4.613867838032635, 0.0),
+        (1.141661053013931, -4.430705633397475, 0.0),
+        (1.069576213108565, -4.256677439986713, 0.0),
+        (0.9711548832444443, -4.096068453940357, 0.0),
+        (0.8488204692607332, -3.952833291509765, 0.0),
+        (0.7055853068301408, -3.830498877526053, 0.0),
+        (0.5449763207837844, -3.7320775476619334, 0.0),
+        (0.370948163148132, -3.659992707756567, 0.0),
+        (0.1877860479507416, -3.616019375585509, 0.0),
+        (0.0, -3.6012403205778734, 0.0),
         (0.0, 0.0, 0.0)
     ]
     cvTuples['Square Pin'] = [
@@ -1352,7 +1366,22 @@ class XMCircleRig(object):
         (-0.6178520249074192, 0.0, -1.8770031626614314),
         (-0.1831451367158871, 0.0, -1.9688981435835975)
     ]
-    def __init__(self, joint, parent, suf, ctrl, par="cont", n=None, s=1):
+    def __init__(self, joint, parent, suf, ctrl, par="cont", n=None, s=1, m=False):
+        """
+        create controller
+
+        :param joint: joint or object the controller will be placed on
+        :param parent: object that the controller buffer will be parented to
+        :param suf: add sufix to name
+        :param ctrl: choice of the controller
+        :param par: how the joint will be parented to the joint:
+                    cont: parent the joint to the controller using a parent constraint
+                    par: parent the joint to the controller using a parent
+                    ctrl: parent controller to joint using a parent constraint
+        :param n: override the automatically generated name
+        :param s: size of the controller
+        :param m: mirror the shape of the controller : bool
+        """
         self.joint = joint
         self.parent = parent
         self.suf = suf
@@ -1360,6 +1389,11 @@ class XMCircleRig(object):
         self.ctrl = ctrl
         self.n = n
         self.s = s
+        self.m = m
+
+        if m ==True:
+            self.s *= -1
+
         if self.ctrl == "circle":
             self.circle = pm.circle(nr=(0,1,0), n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), r=10)
             self.circle[0].setScale((self.s, self.s, self.s))
@@ -1515,22 +1549,22 @@ def XMCreateCtrl():
     Rshoulder = pm.mirrorJoint(joints["shoulder"], mirrorYZ=True, mirrorBehavior=True, searchReplace=('l_', 'r_'))
     armCtrlSetup(Mastercurve,"l_", lastSpine, joints["shoulder"], joints["arm"], joints["forearm"], joints["hand"])
 
-    armCtrlSetup(Mastercurve,"r_", lastSpine, pm.ls(Rshoulder[0])[0], pm.ls(Rshoulder[1])[0], pm.ls(Rshoulder[2])[0], pm.ls(Rshoulder[3])[0])
+    armCtrlSetup(Mastercurve,"r_", lastSpine, pm.ls(Rshoulder[0])[0], pm.ls(Rshoulder[1])[0], pm.ls(Rshoulder[2])[0], pm.ls(Rshoulder[3])[0], m=True)
 
     #leg setup
     Rleg = pm.mirrorJoint(joints["thigh"], mirrorYZ=True, mirrorBehavior=True, searchReplace=("l_", "r_"))
 
     LegCtrlSetup(Mastercurve,"l_", joints["thigh"], joints["leg"], joints["foot"], joints["toe"], joints["toeEnd"])
 
-    LegCtrlSetup(Mastercurve,"r_",pm.ls(Rleg[0])[0], pm.ls(Rleg[1])[0], pm.ls(Rleg[2])[0], pm.ls(Rleg[3])[0], pm.ls(Rleg[4])[0])
+    LegCtrlSetup(Mastercurve,"r_",pm.ls(Rleg[0])[0], pm.ls(Rleg[1])[0], pm.ls(Rleg[2])[0], pm.ls(Rleg[3])[0], pm.ls(Rleg[4])[0], m=True)
 
     jointGrp = pm.group(joints["hips"], n="joints")
 
     jointGrp.setParent(MasterGroup)
 
-def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand):
+def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand, m=False):
     # arm FK controller
-    shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "", "Circle Pin")
+    shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "", "Circle Pin", m=m)
     fkarm = pm.duplicate(arm, rc=True)
     fkcopies = fkarm[0].listRelatives(ad=True)
     fkcopies.append(fkarm[0])
@@ -1540,7 +1574,7 @@ def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand):
 
     for joint in fkcopies:
         joint.rename(num + joint.getAttr("XMjointType") + "FK_jnt")
-        ctrl = XMCircleRig(joint, lastvalid, "fk", "circle")
+        ctrl = XMCircleRig(joint, lastvalid, "fk", "circle", m=m)
         armctrls[num + joint.getAttr("XMjointType") + "_fk"] = ctrl.circle
         lastvalid = armctrls[num + joint.getAttr("XMjointType") + "_fk"]
 
@@ -1553,14 +1587,14 @@ def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand):
         joint.rename(num + joint.getAttr("XMjointType") + "IK_jnt")
 
     ikHandle = pm.ikHandle(sj=ikcopies[0], ee=ikcopies[2], sol="ikRPsolver", n= num + "arm_ikHandle")
-    ikCtrl = XMCircleRig(ikHandle[0], None, "IK","Sphere", "par" , s=2)
+    ikCtrl = XMCircleRig(ikHandle[0], None, "IK","Sphere", "par" , s=2, m=m)
 
-    ikPole = XMCircleRig(ikcopies[1], ikCtrl.circle, "","Sphere", "")
+    ikPole = XMCircleRig(ikcopies[1], ikCtrl.circle, "","Sphere", "", m=m)
     ikPole.circle.setTranslation(ikPole.circle.getTranslation("world")+(0,0,-70),"world")
 
     pm.poleVectorConstraint(ikPole.circle, ikHandle[0])
 
-    ikOption = XMCircleRig(hand, hand, "ikOption", "Gear", "ctrl")
+    ikOption = XMCircleRig(hand, hand, "ikOption", "Gear", "ctrl", m=m)
 
     ikOption.circle.addAttr("IKFK", at="bool", k=True, r=True)
 
@@ -1594,29 +1628,29 @@ def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand):
 
     ikCtrl.group.setParent(master)
 
-def LegCtrlSetup(master,num, thigh, leg, foot, toe, toeEnd):
+def LegCtrlSetup(master,num, thigh, leg, foot, toe, toeEnd, m=False):
     twist = toeEnd.listRelatives(ad=True, typ="transform")
     twist.reverse()
 
     legIkHandle = pm.ikHandle(sj=thigh, ee=foot, sol="ikRPsolver", n=num + "leg_ikHandle")
-    ikCtrl = XMCircleRig(legIkHandle[0], None, "IK", "Sphere", "par",s=2)
+    ikCtrl = XMCircleRig(legIkHandle[0], None, "IK", "Sphere", "par",s=2, m=m)
 
     twist[0].setParent(ikCtrl.circle)
 
-    ikPole = XMCircleRig(leg, ikCtrl.circle, "", "Sphere", "")
+    ikPole = XMCircleRig(leg, ikCtrl.circle, "", "Sphere", "", m=m)
     ikPole.circle.setTranslation(ikPole.circle.getTranslation("world") + (0, 0, 70), "world")
 
     pm.poleVectorConstraint(ikPole.circle, legIkHandle[0])
     toeIkhanlde = pm.ikHandle(sj=foot, ee=toe, sol="ikSCsolver", n=num + "toe_ikHandle")
     toeEndIkhandle = pm.ikHandle(sj=toe, ee=toeEnd, sol="ikSCsolver", n=num + "toeEnd_ikHandle")
 
-    heelCtrl = XMCircleRig(twist[3], twist[2], "", "Half Sphere", par=None)
+    heelCtrl = XMCircleRig(twist[3], twist[2], "", "Half Sphere", par=None, m=m)
 
-    toeRollCtrl = XMCircleRig(twist[0], heelCtrl.circle, "", "Half Sphere", par=None)
+    toeRollCtrl = XMCircleRig(twist[0], heelCtrl.circle, "", "Half Sphere", par=None, m=m)
 
-    footRollCtrl = XMCircleRig(toeIkhanlde[0],toeRollCtrl.circle, "", "circle", par=None, s=0.8 )
+    footRollCtrl = XMCircleRig(toeIkhanlde[0],toeRollCtrl.circle, "", "circle", par=None, s=0.8, m=m )
 
-    toeFlapCtrl = XMCircleRig(toeIkhanlde[0], toeRollCtrl.circle, "", "circle", par=None, s=0.4)
+    toeFlapCtrl = XMCircleRig(toeIkhanlde[0], toeRollCtrl.circle, "", "circle", par=None, s=0.4, m=m)
 
     legIkHandle[0].setParent(footRollCtrl.circle)
     toeIkhanlde[0].setParent(footRollCtrl.circle)
