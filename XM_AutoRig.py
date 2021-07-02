@@ -1372,7 +1372,7 @@ class XMCircleRig(object):
 
         :param joint: joint or object the controller will be placed on
         :param parent: object that the controller buffer will be parented to
-        :param suf: add sufix to name
+        :param suf: add suffix to name
         :param ctrl: choice of the controller
         :param par: how the joint will be parented to the joint:
                     cont: parent the joint to the controller using a parent constraint
