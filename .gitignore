@@ -7,3 +7,6 @@ venv
 .idea/XM_AutoRig.iml
 .idea/XM_AutoRig.iml
 *.xml
+*.pyc
+.vscode/settings.json
+.vscode/launch.json

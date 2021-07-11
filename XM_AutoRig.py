@@ -1709,6 +1709,7 @@ def XMFixElbow(x, p1, p2, p3):
         b = armPos[0] - (armPos[1] * a)
         c = (elbowPos[1]*a)+b
         p2.setTranslation((c,elbowPos[1],elbowPos[2]), "world")
+        
 
 def XMSpineJoints(locator, startJ, startL,endL, value, Num, MakeStartJoint=False):
     if MakeStartJoint == False:
@@ -1755,7 +1756,7 @@ class XMAutoRig(object):
         self.window = pm.window(self.window, title=self.title, widthHeight=self.size)
         pm.menuBarLayout()
         pm.menu(l="Import")
-        pm.menuItem(l="Import setup", c=lambda x: XMImportSetup())
+        pm.menuItem(l="Import setup", c=lambda x1: XMImportSetup())
         pm.menuItem(l="Import joint", c=lambda x: XMImportJoint())
 
         currentRig = None
