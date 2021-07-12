@@ -1366,7 +1366,7 @@ class XMCircleRig(object):
         (-0.6178520249074192, 0.0, -1.8770031626614314),
         (-0.1831451367158871, 0.0, -1.9688981435835975)
     ]
-    def __init__(self, joint, parent, suf, ctrl, par="cont", n=None, s=1, m=False):
+    def __init__(self, joint, parent, ctrl="circle", suf="", par="cont", n=None, s=1, m=False):
         """
         create controller
 
@@ -1390,6 +1390,8 @@ class XMCircleRig(object):
         self.n = n
         self.s = s
         self.m = m
+        if self.joint == None:
+            raise ValueError("a joint must be specified")
 
         if m ==True:
             self.s *= -1
@@ -1472,8 +1474,9 @@ def XMCreatejoint():
     pm.select(clear=True)
     #vertebre joints
     hips = XMjointRig("hips_bjnt", None, locator["hips"].getTranslation("world"), "spine")
-    spines = XMSpineJoints(locator, hips.joint,"hips","neck", XMAutorigWindow.Nspine.getValue(),"spine")
-    necks = XMSpineJoints(locator, spines["spine" + str(XMAutorigWindow.Nspine.getValue() - 1)],"neck","head", XMAutorigWindow.Nneck.getValue(),"neck", MakeStartJoint=True)
+    spines = XMSpineJoints(locator, hips.joint, "hips", "neck", XMAutorigWindow.Nspine.getValue(), "spine")
+    necks = XMSpineJoints(locator, spines["spine" + str(XMAutorigWindow.Nspine.getValue() - 1)], "neck", "head",
+                          XMAutorigWindow.Nneck.getValue(), "neck", MSJ=True)
     head = XMjointRig("head_bjnt", necks["neck" + str(XMAutorigWindow.Nneck.getValue() - 1)], locator["head"].getTranslation("world"), "neck")
     EndJoint(head.joint)
 
@@ -1536,9 +1539,9 @@ def XMCreateCtrl():
         if joint.getAttr("XMjointType") == "spine" or joint.getAttr("XMjointType") == "neck":
 
             if lastValid != joints["hips"]:
-                ctrl = XMCircleRig(joint, lastValid,"", "circle", s=1.5)
+                ctrl = XMCircleRig(joint, lastValid, "circle", "", s=1.5)
             else:
-                ctrl = XMCircleRig(joint, None, "", "circle", s=2)
+                ctrl = XMCircleRig(joint, None, "circle", "", s=2)
                 ctrl.group.setParent(Mastercurve)
 
             lastValid = ctrl.circle
@@ -1564,7 +1567,7 @@ def XMCreateCtrl():
 
 def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand, m=False):
     # arm FK controller
-    shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "", "Circle Pin", m=m)
+    shoulderCtrl = XMCircleRig(shoulder, lastSpine[0], "Circle Pin", "", m=m)
     fkarm = pm.duplicate(arm, rc=True)
     fkcopies = fkarm[0].listRelatives(ad=True)
     fkcopies.append(fkarm[0])
@@ -1574,7 +1577,7 @@ def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand, m=False):
 
     for joint in fkcopies:
         joint.rename(num + joint.getAttr("XMjointType") + "FK_jnt")
-        ctrl = XMCircleRig(joint, lastvalid, "fk", "circle", m=m)
+        ctrl = XMCircleRig(joint, lastvalid, "circle", "fk", m=m)
         armctrls[num + joint.getAttr("XMjointType") + "_fk"] = ctrl.circle
         lastvalid = armctrls[num + joint.getAttr("XMjointType") + "_fk"]
 
@@ -1587,14 +1590,15 @@ def armCtrlSetup(master,num, lastSpine ,shoulder, arm, forearm, hand, m=False):
         joint.rename(num + joint.getAttr("XMjointType") + "IK_jnt")
 
     ikHandle = pm.ikHandle(sj=ikcopies[0], ee=ikcopies[2], sol="ikRPsolver", n= num + "arm_ikHandle")
-    ikCtrl = XMCircleRig(ikHandle[0], None, "IK","Sphere", "par" , s=2, m=m)
+    ikCtrl = XMCircleRig(ikHandle[0], None, "Sphere", "IK", "par", s=2, m=m)
+    pm.orientConstraint(ikCtrl.circle,ikcopies[2])
 
-    ikPole = XMCircleRig(ikcopies[1], ikCtrl.circle, "","Sphere", "", m=m)
+    ikPole = XMCircleRig(ikcopies[1], ikCtrl.circle, "Sphere", "", "", m=m)
     ikPole.circle.setTranslation(ikPole.circle.getTranslation("world")+(0,0,-70),"world")
 
     pm.poleVectorConstraint(ikPole.circle, ikHandle[0])
 
-    ikOption = XMCircleRig(hand, hand, "ikOption", "Gear", "ctrl", m=m)
+    ikOption = XMCircleRig(hand, hand, "Gear", "ikOption", "ctrl", m=m)
 
     ikOption.circle.addAttr("IKFK", at="bool", k=True, r=True)
 
@@ -1633,24 +1637,24 @@ def LegCtrlSetup(master,num, thigh, leg, foot, toe, toeEnd, m=False):
     twist.reverse()
 
     legIkHandle = pm.ikHandle(sj=thigh, ee=foot, sol="ikRPsolver", n=num + "leg_ikHandle")
-    ikCtrl = XMCircleRig(legIkHandle[0], None, "IK", "Sphere", "par",s=2, m=m)
+    ikCtrl = XMCircleRig(legIkHandle[0], None, "Sphere", "IK", "par", s=2, m=m)
 
     twist[0].setParent(ikCtrl.circle)
 
-    ikPole = XMCircleRig(leg, ikCtrl.circle, "", "Sphere", "", m=m)
+    ikPole = XMCircleRig(leg, ikCtrl.circle, "Sphere", "", "", m=m)
     ikPole.circle.setTranslation(ikPole.circle.getTranslation("world") + (0, 0, 70), "world")
 
     pm.poleVectorConstraint(ikPole.circle, legIkHandle[0])
     toeIkhanlde = pm.ikHandle(sj=foot, ee=toe, sol="ikSCsolver", n=num + "toe_ikHandle")
     toeEndIkhandle = pm.ikHandle(sj=toe, ee=toeEnd, sol="ikSCsolver", n=num + "toeEnd_ikHandle")
 
-    heelCtrl = XMCircleRig(twist[3], twist[2], "", "Half Sphere", par=None, m=m)
+    heelCtrl = XMCircleRig(twist[3], twist[2], "Half Sphere", "", par=None, m=m)
 
-    toeRollCtrl = XMCircleRig(twist[0], heelCtrl.circle, "", "Half Sphere", par=None, m=m)
+    toeRollCtrl = XMCircleRig(twist[0], heelCtrl.circle, "Half Sphere", "", par=None, m=m)
 
-    footRollCtrl = XMCircleRig(toeIkhanlde[0],toeRollCtrl.circle, "", "circle", par=None, s=0.8, m=m )
+    footRollCtrl = XMCircleRig(toeIkhanlde[0], toeRollCtrl.circle, "circle", "", par=None, s=0.8, m=m)
 
-    toeFlapCtrl = XMCircleRig(toeIkhanlde[0], toeRollCtrl.circle, "", "circle", par=None, s=0.4, m=m)
+    toeFlapCtrl = XMCircleRig(toeIkhanlde[0], toeRollCtrl.circle, "circle", "", par=None, s=0.4, m=m)
 
     legIkHandle[0].setParent(footRollCtrl.circle)
     toeIkhanlde[0].setParent(footRollCtrl.circle)
@@ -1683,6 +1687,7 @@ def XMImportSetup():
     XMAutorigWindow.rigLocator = rig_dict
 
 def XMImportJoint():
+    "not really functional now that the joint and ctrl setup as gotten more complex"
     rig_dict = {}
     select = pm.ls(sl=True,tr=True, dag=True)
     for s in select:
@@ -1709,10 +1714,21 @@ def XMFixElbow(x, p1, p2, p3):
         b = armPos[0] - (armPos[1] * a)
         c = (elbowPos[1]*a)+b
         p2.setTranslation((c,elbowPos[1],elbowPos[2]), "world")
-        
 
-def XMSpineJoints(locator, startJ, startL,endL, value, Num, MakeStartJoint=False):
-    if MakeStartJoint == False:
+
+def XMSpineJoints(locator, startJ, startL, endL, value, Num, MSJ=False):
+    """
+    create x number of joint between two locator
+    :param locator: dict of locators
+    :param startJ: parent of the chain
+    :param startL: starting locator
+    :param endL: end locator
+    :param value: number of joints
+    :param Num: type of the joint
+    :param MSJ: Make Starting Joint: whether or not the create the initial joint of the chain
+    :return: return an dict of the created joints
+    """
+    if MSJ == False:
         offset=1
     else:
         offset=0
