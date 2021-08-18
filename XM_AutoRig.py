@@ -2,6 +2,7 @@ import pymel.core as pm
 import sys
 sys.path.append(pm.internalVar(usd=True) + "XM_AutoRig")
 from XM_AutoRigFrame import XM_AutoRigFrame as rf
+import XM_lib as xm
 reload(rf)
 
 #setup locator setup
@@ -280,26 +281,6 @@ def XMImportJoint():
         rig_dict[s.name()] = s
     XMAutorigWindow.rigJoint = rig_dict
 
-def XMFixElbow(x, p1, p2, p3):
-    armPos = p1.getTranslation("world")
-    elbowPos = p2.getTranslation("world")
-    handPos = p3.getTranslation("world")
-    if(x == "x"):
-        if(armPos[1] == handPos[1]):
-            p2.setTranslation((elbowPos[0], handPos[2], elbowPos[2]), "world")
-            pass
-        a = (armPos[1]-handPos[1])/(armPos[0]-handPos[0])
-        b = armPos[1]-(armPos[0]*a)
-        c = (elbowPos[0]*a)+b
-        p2.setTranslation((elbowPos[0], c, elbowPos[2]), "world")
-    else:
-        if(armPos[0] == handPos[0]):
-            p2.setTranslation((handPos[0], elbowPos[1], elbowPos[2]), "world")
-            pass
-        a = (armPos[0] - handPos[0]) / (armPos[1] - handPos[1])
-        b = armPos[0] - (armPos[1] * a)
-        c = (elbowPos[1]*a)+b
-        p2.setTranslation((c,elbowPos[1],elbowPos[2]), "world")
 
 
 def XMSpineJoints(locator, startJ, startL, endL, value, Num, MSJ=False):
@@ -373,8 +354,8 @@ class XMAutoRig(object):
         self.settingFrame = pm.frameLayout(l="setting", en=False)
         #setup fixes
         pm.rowLayout(nc=3)
-        pm.button(l="fix elbow", c=lambda x: XMFixElbow("x", XMAutorigWindow.rigLocator["arm"], XMAutorigWindow.rigLocator["forearm"], XMAutorigWindow.rigLocator["hand"]))
-        pm.button(l="fix knee", c=lambda x: XMFixElbow("y", XMAutorigWindow.rigLocator["thigh"], XMAutorigWindow.rigLocator["leg"], XMAutorigWindow.rigLocator["foot"]))
+        pm.button(l="fix elbow", c=lambda x: xm.XMFixElbow("x", XMAutorigWindow.rigLocator["arm"], XMAutorigWindow.rigLocator["forearm"], XMAutorigWindow.rigLocator["hand"]))
+        pm.button(l="fix knee", c=lambda x: xm.XMFixElbow("y", XMAutorigWindow.rigLocator["thigh"], XMAutorigWindow.rigLocator["leg"], XMAutorigWindow.rigLocator["foot"]))
         pm.button(l="unparent", c=lambda x: XMSetupUnparent())
         pm.setParent(u=True)
         self.Nspine = pm.intSliderGrp(l="spine joint", v=3, min=1,max=6, fmx=100, f=True)
