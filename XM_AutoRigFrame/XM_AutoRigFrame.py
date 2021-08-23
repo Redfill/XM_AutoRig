@@ -1,5 +1,4 @@
 import pymel.core as pm
-from string import replace
 
 class XMlocatorRig(object):
     def __init__(self, name, parent, location, t="setup"):
@@ -1400,10 +1399,10 @@ class XMCurveRig(object):
             self.s *= -1
 
         if self.ctrl == "circle":
-            self.curve = pm.circle(nr=(0, 1, 0), n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), r=10)
+            self.curve = pm.circle(nr=(0, 1, 0), n=str.replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), r=10)
             self.curve = self.curve[0]
         else:
-            self.curve = pm.curve(n=replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), d=1, p=XMCurveRig.cvTuples[ctrl])
+            self.curve = pm.curve(n=str.replace(self.joint.name(), "_bjnt", self.suf + "_ctrl").replace("_jnt", "_ctrl"), d=1, p=XMCurveRig.cvTuples[ctrl])
 
         self.curve.setScale((self.s, self.s, self.s))
         pm.makeIdentity(self.curve, a=True, s=True)
@@ -1411,7 +1410,7 @@ class XMCurveRig(object):
         if self.n != None:
             self.curve.rename(self.n)
 
-        self.group = pm.group(em=True, n=replace(self.joint.name(), "_bjnt", self.suf + "_srtBuffer"))
+        self.group = pm.group(em=True, n=str.replace(self.joint.name(), "_bjnt", self.suf + "_srtBuffer"))
         pm.parent(self.curve, self.group)
         pm.matchTransform(self.group, self.joint, piv=True, pos=True, rot=True)
         if self.par == "cont":

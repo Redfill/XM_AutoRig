@@ -1,9 +1,10 @@
 import pymel.core as pm
 import sys
+import importlib
 sys.path.append(pm.internalVar(usd=True) + "XM_AutoRig")
 from XM_AutoRigFrame import XM_AutoRigFrame as rf
 import XM_lib as xm
-reload(rf)
+importlib.reload(rf)
 
 #setup locator setup
 def XMCreateSetup(rigName):
